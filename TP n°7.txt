@@ -1,0 +1,74 @@
+\c postgres
+
+DROP DATABASE IF EXISTS
+"BDCommande2021";
+
+CREATE DATABASE "BDCommande2021"
+ENCODING 'UTF8';
+
+
+\c BDCommande2021
+
+DROP TABLE IF EXISTS Commande;
+
+DROP TABLE IF EXISTS Client;
+
+DROP TABLE IF EXISTS Article;
+
+DROP TABLE IF EXISTS Fournisseur;
+
+DROP TABLE IF EXISTS Concerne;
+
+
+CREATE TABLE Commande
+(
+    noC INT PRIMARY KEY, CHECK (SELECT unArticle
+	FROM Commande, Concerne
+	WHERE UPPER(noC) = UPPER(uneCommande)) NOT NULL,
+    dateC DATE,
+    FOREIGN KEY (leClient INT NOT NULL)
+	REFERENCES
+	Client(noClient),
+    montant INT
+);
+
+CREATE TABLE Client
+(
+    noClient INT PRIMARY KEY,
+    nomC VARCHAR(255) NOT NULL UNIQUE,
+    prenomC VARCHAR(255) NOT NULL UNIQUE,
+    noTel CHAR(10) NOT NULL, CHECK (noTel LIKE '0%')
+);
+
+CREATE TABLE Article
+(
+    noArticle INT PRIMARY KEY,
+    intitulé VARCHAR(255) NOT NULL,
+    prixVente INT NOT NULL,
+    FOREIGN KEY (leFournisseur INT NOT NULL)
+	REFERENCES
+	Fournisseur(noFournisseur),
+    prixAchat INT
+);
+
+CREATE TABLE Fournisseur
+(
+    noFournisseur INT PRIMARY KEY, CHECK ((SELECT COUNT(*)
+	FROM (SELECT leFournisseur
+	    FROM Article)) = (SELECT COUNT(noFournisseur)
+		FROM Fournisseur)),
+    nomF VARCHAR(255),
+    adresseF VARCHAR(255) NOT NULL UNIQUE,
+    mailF VARCHAR(255) NOT NULL UNIQUE, CHECK (mailF LIKE '%@%')
+);
+
+CREATE TABLE Concerne
+(
+    FOREIGN KEY (uneCommande INT PRIMARY KEY)
+	REFERENCES
+	Commande(noC),
+    FOREIGN KEY (unArticle INT PRIMARY KEY)
+	REFERENCES
+	Article(noArticle),
+    quantite INT NOT NULL
+);
